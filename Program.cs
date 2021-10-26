@@ -594,24 +594,36 @@ namespace ContruDelasConsole
             }
             */
 
-            var estoqueDeProdutos = new List<Produto>();
-            var pedidos = new List<Pedido>();
+            /*var fruta = " liMão ";
+
+            var p_produtos = new List<Produto>() { new Produto { Nome = "batata" }, new Produto { Nome = "Limão" } };
+            if(p_produtos.Find(p => p.Nome.ToLower().Trim() == fruta.ToLower().Trim()) != null)
+            {
+                //Se achei o limão
+            }
+            else
+            {
+                // Se não achei o limão
+            }*/
+            
 
             while (true)
             {
                 Console.Clear();
                 Console.WriteLine("Olá ... O que vc deseja fazer ? ");
-                Console.WriteLine("Digite 1 para cadastrar um produtos");
-                Console.WriteLine("Digite 2 para cadastrar um pedido");
-                Console.WriteLine("Digite 3 para mostrar relatório");
-                Console.WriteLine("Digite 4 para mostrar estoque");
+                Console.WriteLine("Digite 1 para cadastrar materia prima");
+                Console.WriteLine("Digite 2 para cadastrar um produtos");
+                Console.WriteLine("Digite 3 para cadastrar um pedido");
+                Console.WriteLine("Digite 4 para mostrar relatório");
+                Console.WriteLine("Digite 5 para mostrar estoque");
                 Console.WriteLine("Digite 0 para mostrar sair");
                 var dado = Console.ReadLine();
                 if (dado.Trim() == "0") break;
                 if (dado.Trim() != "1" &&
                     dado.Trim() != "2" &&
                     dado.Trim() != "3" &&
-                    dado.Trim() != "4")
+                    dado.Trim() != "4" &&
+                    dado.Trim() != "5")
                 {
                     Console.WriteLine("Opção inválida ...");
                     Thread.Sleep(5000); // 5 segundos
@@ -621,25 +633,53 @@ namespace ContruDelasConsole
                 switch (Convert.ToInt16(dado))
                 {
                     case 1:
-                        cadastraProdutos(estoqueDeProdutos);
+                        cadastraMateriaPrima();
                         break;
                     case 2:
-                        pedidos.Add(cadastrarPedido(estoqueDeProdutos));
+                        cadastraProdutos();
                         break;
                     case 3:
-                        mostraRelatorioDePedidos(pedidos);
+                        pedidos.Add(cadastrarPedido());
                         break;
                     case 4:
+                        mostraRelatorioDePedidos();
+                        break;
+                    case 5:
                         Console.Clear();
-                        mostrarEstoque(estoqueDeProdutos);
+                        mostrarEstoque();
                         Thread.Sleep(5000); // 5 segundos
                         break;
                 }
             }
-
         }
 
-        private static void mostrarEstoque(List<Produto> produtos)
+        static List<Produto> produtos = new List<Produto>();
+        static List<MateriaPrima> listaMateriaPrima = new List<MateriaPrima>();
+        static List<Pedido> pedidos = new List<Pedido>();
+
+        private static void cadastraMateriaPrima()
+        {
+            Console.Clear();
+            var materaPrima = new MateriaPrima();
+
+            try
+            {
+                Console.WriteLine($"Digite o código:");
+                materaPrima.Codigo = Convert.ToInt16("0" + Console.ReadLine());
+
+                Console.WriteLine($"Digite o nome:");
+                materaPrima.Nome = Console.ReadLine();
+            }
+            catch
+            {
+                cadastraMateriaPrima();
+                return;
+            }
+
+            listaMateriaPrima.Add(materaPrima);
+        }
+
+        private static void mostrarEstoque()
         {
             if (produtos.Count == 0)
             {
@@ -653,21 +693,7 @@ namespace ContruDelasConsole
             }
         }
 
-        private static void cadastraProdutos(List<Produto> produtos)
-        {
-            while (true)
-            {
-                Console.Clear();
-                Console.WriteLine("Olá ... Bem vindo ao cadastro de produtos");
-                Console.WriteLine("Digite 1 para cadastrar um produto ou 0 para sair");
-                var dado = Console.ReadLine();
-                if (dado.Trim() != "1") break;
-
-                produtos.Add(cadastrarProduto());
-            }
-        }
-
-        private static Produto cadastrarProduto()
+        private static void cadastraProdutos()
         {
             Console.Clear();
             var produto = new Produto();
@@ -680,18 +706,60 @@ namespace ContruDelasConsole
                 Console.WriteLine($"Digite o nome do produto:");
                 produto.Nome = Console.ReadLine();
 
+                preencheListaMateriaPrima(produto);
+
                 Console.WriteLine($"O Valor do {produto.Nome}: ");
                 produto.Valor = Convert.ToDouble("0" + Console.ReadLine());
+
             }
             catch
             {
-                return cadastrarProduto();
+                cadastraProdutos();
+                return;
             }
 
-            return produto;
+            produtos.Add(produto);
         }
 
-        private static void mostraRelatorioDePedidos(List<Pedido> pedidos)
+        private static void preencheListaMateriaPrima(Produto produto)
+        {
+            if (produto.ListaMateriaPrima == null) produto.ListaMateriaPrima = new List<MateriaPrima>();
+
+            if (listaMateriaPrima.Count == 0)
+            {
+                Console.Clear();
+                Console.WriteLine("Não exite materia prima cadastrada");
+                Thread.Sleep(5000);
+                return;
+            }
+
+            Console.WriteLine("Selecione um dos itens abaixo:");
+            foreach (var mp in listaMateriaPrima)
+            {
+                Console.WriteLine($" {mp.Codigo} - {mp.Nome}");
+            }
+
+            var codigo = Convert.ToInt16(Console.ReadLine());
+
+            var materiaPrima = listaMateriaPrima.Find(mp => mp.Codigo == codigo);
+
+            if (materiaPrima == null)
+            {
+                Console.Clear();
+                Console.WriteLine($"Não existe um produto com o código {codigo}");
+                Thread.Sleep(5000);
+                preencheListaMateriaPrima(produto);
+                return;
+            }
+
+            produto.ListaMateriaPrima.Add(materiaPrima);
+
+            Console.WriteLine("Digite 0 para continuar cadastrando matéria prima:");
+            var continua = Convert.ToInt16(Console.ReadLine());
+            if(continua == 0) preencheListaMateriaPrima(produto);
+        }
+
+        private static void mostraRelatorioDePedidos()
         {
             Console.Clear();
 
@@ -709,7 +777,16 @@ namespace ContruDelasConsole
 
                 foreach (var produto in pedido.Produtos)
                 {
-                    Console.WriteLine($" - { produto.Nome}, Quantidade { produto.Quantidade}, Valor unitário R${produto.Valor.ToString("#.##")}, Valor R${produto.ValorTotal().ToString("#.##")} ");
+                    Console.WriteLine(produto.Nome);
+
+                    foreach(var mp in produto.ListaMateriaPrima)
+                    {
+                        Console.WriteLine($" - {mp.Nome}");
+                    }
+
+                    Console.WriteLine($"Quantidade { produto.Quantidade}");
+                    Console.WriteLine($"Valor unitário R${produto.Valor.ToString("#.##")}");
+                    Console.WriteLine($"Valor R${produto.ValorTotal().ToString("#.##")} ");
                 }
 
                 Console.WriteLine($"Será entregue no endereço {pedido.Cliente.Endereco}");
@@ -720,7 +797,7 @@ namespace ContruDelasConsole
             Thread.Sleep(15000); // 15 segundos
         }
 
-        private static Pedido cadastrarPedido(List<Produto> produtos)
+        private static Pedido cadastrarPedido()
         {
             Console.Clear();
 
@@ -739,7 +816,7 @@ namespace ContruDelasConsole
                 Console.Clear();
 
                 Console.WriteLine($"Segue a lista de produtos disponíveis no estoque:");
-                mostrarEstoque(produtos);
+                mostrarEstoque();
 
                 Console.WriteLine($"Digite o código do produto que deseja:");
                 var codigo = Convert.ToInt16("0" + Console.ReadLine());

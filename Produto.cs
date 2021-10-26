@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+
 namespace ContruDelasConsole
 {
     public class Produto
@@ -7,6 +9,7 @@ namespace ContruDelasConsole
         public string Nome { get; set; }
         public double Valor { get; set; }
         public int Quantidade { get; set; }
+        public List<MateriaPrima> ListaMateriaPrima { get; set; }
 
         public double ValorTotal()
         {
